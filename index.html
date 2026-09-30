@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>君王心术·七维测验</title>
+  <style>
+    :root {
+      --bg: #121214;
+      --card-bg: #1a1a1f;
+      --card-border: #2d2d38;
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --text: #e6e6eb;
+      --text-muted: #9595a6;
+      --accent: #8b1e1e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #252530;
+      border-radius: 3px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 7%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      transition: width 0.3s ease;
+    }
+
+    /* 顶部导航控制行（进度编号 + 返回按钮） */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .step-indicator {
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .prev-btn {
+      background: transparent;
+      border: 1px solid #3d3d4d;
+      color: var(--text-muted);
+      border-radius: 16px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .prev-btn:hover:not(:disabled) {
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .prev-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      border-color: #2a2a35;
+    }
+
+    .question-title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .question-scenario {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      background: #151518;
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background: #202029;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      color: var(--text);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover {
+      background: #282835;
+      border-color: var(--gold);
+      transform: translateY(-1px);
+    }
+
+    /* 封面页专属样式 */
+    .cover-container {
+      text-align: center;
+      padding: 12px 8px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .cover-silhouette {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.45));
+    }
+
+    .cover-silhouette svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .cover-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--gold-light);
+      margin-bottom: 8px;
+    }
+
+    .cover-subtitle {
+      font-size: 0.95rem;
+      letter-spacing: 2px;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .cover-intro {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      text-align: justify;
+      background: #151518;
+      padding: 18px 20px;
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+      margin-bottom: 28px;
+    }
+
+    .cover-intro p:first-child {
+      color: var(--gold-light);
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .cover-intro p:last-child {
+      margin-bottom: 0;
+      line-height: 1.8;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, var(--gold), #967822);
+      color: #000;
+      font-weight: 700;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 28px;
+      cursor: pointer;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+    }
+
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
+    }
+
+    /* 结果页样式 */
+    .result-container {
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .result-badge {
+      display: inline-block;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .result-emperor {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .result-dimensions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .dim-tag {
+      background: #262633;
+      border: 1px solid #3d3d52;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .dim-tag.pos {
+      color: #98d8aa;
+      border-color: #3b6b47;
+    }
+
+    .dim-tag.neg {
+      color: #f79595;
+      border-color: #7a3131;
+    }
+
+    /* 七维特性列表样式 */
+    .result-section-title {
+      font-size: 0.95rem;
+      color: var(--gold-light);
+      letter-spacing: 1px;
+      margin: 20px 0 12px 0;
+      text-align: left;
+      border-bottom: 1px dashed #3a3a4c;
+      padding-bottom: 6px;
+    }
+
+    .dimension-traits-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .trait-item {
+      background: #1b1b22;
+      border: 1px solid #2d2d3a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+    }
+
+    .trait-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .trait-badge.pos {
+      background: rgba(152, 216, 170, 0.15);
+      color: #98d8aa;
+      border: 1px solid #3b6b47;
+    }
+
+    .trait-badge.neg {
+      background: rgba(247, 149, 149, 0.15);
+      color: #f79595;
+      border: 1px solid #7a3131;
+    }
+
+    .trait-desc {
+      color: #c5c5d2;
+      line-height: 1.45;
+      font-size: 0.86rem;
+    }
+
+    .result-desc {
+      text-align: left;
+      background: #16161b;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #c5c5d2;
+      border-top: 2px solid var(--gold);
+      margin-bottom: 28px;
+    }
+
+    .restart-btn {
+      background: linear-gradient(135deg, var(--gold), #967822);
+      color: #000;
+      font-weight: 600;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 24px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    .restart-btn:hover {
+      opacity: 0.9;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 封面页 -->
+  <div class="container cover-container" id="cover-box">
+    <div class="cover-silhouette">
+      <svg viewBox="0 0 100 100" fill="var(--gold)">
+        <polygon points="12,24 88,24 82,18 18,18" />
+        <rect x="22" y="24" width="2" height="10" />
+        <rect x="36" y="24" width="2" height="11" />
+        <rect x="50" y="24" width="2" height="12" />
+        <rect x="64" y="24" width="2" height="11" />
+        <rect x="78" y="24" width="2" height="10" />
+        <path d="M38,24 L62,24 L58,36 C58,45 54,49 50,49 C46,49 42,45 42,36 Z" />
+        <path d="M44,48 L56,48 L60,58 L40,58 Z" />
+        <path d="M40,58 L10,76 L14,94 L86,94 L90,76 L60,58 L50,68 Z" />
+      </svg>
+    </div>
+
+    <div class="cover-title">君王心术</div>
+    <div class="cover-subtitle">七 维 投 影 测 验</div>
+
+    <div class="cover-intro">
+      <p>骄奢淫逸暴吝诈，谦俭节勤仁施诚。</p>
+      <p>14 场暗潮汹涌的权力沙盘与人性抉择，穿越千年青史，于 128 位华夏君主中，照见你的灵魂投影。</p>
+    </div>
+
+    <button class="start-btn" onclick="startQuiz()">开 启 测 验</button>
+  </div>
+
+  <!-- 2. 答题卡 -->
+  <div class="container" id="quiz-box" style="display: none;">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="top-nav">
+      <div class="step-indicator" id="step-indicator">SCENARIO 01 / 14</div>
+      <button class="prev-btn" id="prev-btn" onclick="prevQuestion()" disabled>
+        <span>←</span> 上一题
+      </button>
+    </div>
+
+    <div class="question-title" id="question-title">加载中...</div>
+    <div class="question-scenario" id="question-scenario">加载中...</div>
+    <div class="options-list" id="options-list"></div>
+  </div>
+
+  <!-- 3. 结果页 -->
+  <div class="container result-container" id="result-box">
+    <div class="result-badge">灵魂投影 · 命定帝王</div>
+    <div class="result-emperor" id="result-emperor">宋仁宗 赵祯</div>
+    <div class="result-dimensions" id="result-dimensions"></div>
+  
+    <!-- 七维特性与诠释展示区 -->
+    <div class="result-section-title">【七维心术判定与诠释】</div>
+    <div class="dimension-traits-list" id="dimension-traits-list"></div>
+
+    <!-- 史实锚点评价区 -->
+    <div class="result-section-title">【史实锚点与治世评注】</div>
+    <div class="result-desc" id="result-desc">历史锚点与行事评价加载中...</div>
+  
+    <button class="restart-btn" onclick="restartQuiz()">重新测验</button>
+  </div>
+
+  <script>
+    // 七维核心概念库：定义每个维度在 1(正) / 0(负) 下的特性名称与深层诠释
+    const DIMENSION_MAP = [
+      {
+        index: 0,
+        name: "气度",
+        pos: { label: "谦逊自持", desc: "能屈己从人、虚怀受谏，不以九五至尊自矜，具克制之怀。" },
+        neg: { label: "刚愎自傲", desc: "视天下皆在掌中，好大喜功或誓不认错，威棱逼人。" }
+      },
+      {
+        index: 1,
+        name: "物用",
+        pos: { label: "俭朴克己", desc: "躬行节用，去粗取精，戒奢崇俭，不以天下民脂充盈私室。" },
+        neg: { label: "盛极奢靡", desc: "大兴台榭行宫，营造排场奢靡，视国帑金帛如泥沙。" }
+      },
+      {
+        index: 2,
+        name: "私德",
+        pos: { label: "严持节制", desc: "不迩女色男宠，无声色犬马之内帏秽乱，私生活自律清正。" },
+        neg: { label: "纵情声色", desc: "深宫耽溺欲海，后宫庞杂逾制，甚至败坏伦常、难遏情欲。" }
+      },
+      {
+        index: 3,
+        name: "政务",
+        pos: { label: "宵旰勤政", desc: "夙夜忧劳万机，躬亲军政要务，披览奏章达旦，实干无歇。" },
+        neg: { label: "逸豫倦朝", desc: "怠弃朝政，居深宫贪图自乐，委政外戚、近臣、宦官或权臣。" }
+      },
+      {
+        index: 4,
+        name: "御下",
+        pos: { label: "宽厚仁恕", desc: "爱惜黔首赤子，慎用刑戮，待臣下优容，不忍轻加残诛。" },
+        neg: { label: "铁血峻刻", desc: "用法峻急惨烈，动辄屠戮诛夷，视人命若草芥，严刑峻法。" }
+      },
+      {
+        index: 5,
+        name: "财柄",
+        pos: { label: "广散恩德", desc: "轻徭薄赋以惠民，好散财以犒将士，待部下封赏优渥不惜私藏。" },
+        neg: { label: "视财紧守", desc: "吝惜府库封赏，刻削将吏，聚敛天下财赋于私囊内库而不舍发遣。" }
+      },
+      {
+        index: 6,
+        name: "行机",
+        pos: { label: "开诚布公", desc: "推赤心待人，守诺遵盟，行正道而不事诡道，极具契约信实。" },
+        neg: { label: "机巧权谋", desc: "口蜜腹剑，善使阴谋反覆，杀降背盟，以权术诈术御下控盘。" }
+      }
+    ];
+
+    // 128位皇帝与君主字典
+    const EMPERORS = {
+      "1111111": { title: "宋仁宗", name: "赵祯", desc: "纳谏容直、夜饥不索羊肉、不迩声色、勤于宵旰、死后洛阳百姓罢市哭巷、待契丹以信诚。" },
+      "1111110": { title: "光武帝", name: "刘秀", desc: "退功臣进文吏、俭约自守、专情阴丽华、虽仁恕轻刑，但御下兼施机权察察之术、以图谶政治手段驭下。" },
+      "1111101": { title: "宋孝宗", name: "赵昚", desc: "恭俭守礼、平反岳飞、励精图治、待宗室清苦、用财刻削严谨以筹备北伐、推诚待老臣。" },
+      "1111100": { title: "前秦宣昭帝", name: "苻坚", desc: "崇儒重教、生活简素、虚怀若谷、但在统一北方过程中频用招降怀柔与虚实威慑之权谋，对财政控制严谨。" },
+      "1111011": { title: "北魏明元帝", name: "拓跋嗣", desc: "俭朴勤政、能听直言、赈济流民、但用刑严苛诛杀后族及叛民不假辞色、性格直爽质朴。" },
+      "1111010": { title: "明太祖", name: "朱元璋", desc: "虽专制自任但受匡正、布衣天子极崇节俭、起居自律、严酷剥皮惩贪（暴）、广设惠民药局（施）、擅借大狱诛翦功臣（诈）。" },
+      "1111001": { title: "清世宗（雍正）", name: "胤禛", desc: "自称“天下第一痛心人”、御下冷峻少恩、对贪腐追缴入骨（吝/严）、政令推行雷厉风行且开诚布公。" },
+      "1111000": { title: "南汉烈宗", name: "刘隐", desc: "早期创业时严于律己、节制私欲、手段毒辣果决、财赋吝于分封部属、好用诈术诱杀岭南群雄。" },
+      "1110111": { title: "汉昭帝", name: "刘弗陵", desc: "年幼即位温逊克己、始元罢榷酤减赋、自身居深宫委政霍光（逸）、仁厚宽容、诚心待重臣。" },
+      "1110110": { title: "汉章帝", name: "刘炟", desc: "宽和谦顺、躬行节俭、好《老子》好清静无为、待外戚马氏笃厚、但政治权术微操严密。" },
+      "1110101": { title: "成汉幽公", name: "李期", desc: "幼年聪敏温厚、即位后委政近臣不理庶政、对国库金帛抓极严、待人直率无饰。" },
+      "1110100": { title: "南梁简文帝", name: "萧纲", desc: "好玄言、性宽和简素、被侯景软禁后消极避祸、在夹缝中以智谋保命、财政分毫被扼。" },
+      "1110011": { title: "前燕烈祖", name: "慕容儁", desc: "虽尚文雅俭朴、任内略显安逸享成、但晚年好用严刑征兵百万、对部族赏赐甚厚。" },
+      "1110010": { title: "西秦高祖", name: "乞伏乾归", desc: "简朴耐苦、但政务怠惰好畋猎、对待反叛部落动辄屠戮、投附后秦反复无常。" },
+      "1110001": { title: "后汉隐帝", name: "刘承祐", desc: "居深宫不亲政、生性猜忌残忍、诛杀杨邠等顾命重臣、封赏吝啬、行事偏执直接。" },
+      "1110000": { title: "南齐前废帝", name: "萧昭业", desc: "登位前伪装孝谨俭约（诈）、登位后怠政委任、诛戮顾命之臣、控制内库用度。" },
+      "1101111": { title: "汉宣帝", name: "刘询", desc: "身居民间知稼穑之艰难、信赏必罚、推心置腹、唯后宫多宠倾心霍成君与张婕妤等、宫闱情欲纠葛繁密。" },
+      "1101110": { title: "越王", name: "勾践", desc: "卧薪尝胆极俭、勤勉不怠、抚恤孤寡民心归附、纳西施郑旦沉溺、用文种破吴七术（诈）。" },
+      "1101101": { title: "蜀汉后主", name: "刘禅", desc: "虚心委政诸葛亮、宫室器皿简朴、但后宫广纳美色、对财帛极度惜守、待臣僚极为坦诚。" },
+      "1101100": { title: "宋哲宗", name: "赵煦", desc: "克制物欲内帑吝出、暗用变法党争手段（绍述）、晚年纵情女色（孟后废黜案）。" },
+      "1101011": { title: "冉魏平帝", name: "冉闵", desc: "勇武谦待将士、常年戎马自律、但私生活多纳胡汉姬妾、下屠胡令（暴）、对部属分赏直接。" },
+      "1101010": { title: "后梁太祖", name: "朱温", desc: "征战自苦、起于草莽尚俭、乱伦聚麀（淫）、猜忌屠戮大将（暴）、诈诱李唐宗室白马驿之祸。" },
+      "1101001": { title: "前赵昭武帝", name: "刘聪", desc: "虽喜诗书简朴、但后宫立“三后”并建、用法残虐好杀、对非匈奴近臣极吝赏赐。" },
+      "1101000": { title: "后赵明帝", name: "石勒", desc: "虚怀纳谏、生活俭朴、然而好蓄女色、用刑严峻、行军作战诡诈多端、惜金帛封赏。" },
+      "1100111": { title: "晋哀帝", name: "司马丕", desc: "崇尚黄老、好道术断谷食饵、深宫淫靡好女色、性仁爱宽厚、委政桓温。" },
+      "1100110": { title: "唐敬宗", name: "李湛", desc: "不喜盛大营建、深居内宫迷恋手搏与姬妾、性尚仁懦、但喜设机巧小智愚弄宦官。" },
+      "1100101": { title: "明穆宗（隆庆）", name: "朱载坖", desc: "恭逊寡言、穿洗旧之衣、委政张居正与高拱（逸）、沉湎后宫服春药、内帑锁闭甚吝。" },
+      "1100100": { title: "汉哀帝", name: "刘欣", desc: "雅性不好声乐奢靡、但沉溺董贤男色、退居别殿怠政、外宽内忌用机权罢逐重臣。" },
+      "1100011": { title: "南朝齐郁林王", name: "萧昭业", desc: "穿破衣假俭、性荒淫通叔母、荒怠朝政、但喜滥赏左右近侍、好残戮政敌。" },
+      "1100010": { title: "北齐幼主", name: "高恒", desc: "寄人篱下虚敬太上皇、无内修之奢但宫闱乱伦、怠荒丧国、残虐宫婢、诡诈以避诛。" },
+      "1100001": { title: "南朝宋少帝", name: "刘义符", desc: "不营华池大殿、好造角抵场杂戏、深宫内帏无度、居丧荒怠、杀大臣无恩。" },
+      "1100000": { title: "东晋废帝", name: "司马奕", desc: "俭朴退避、被桓温诬以男宠后宫秽乱、消极避祸怠政、遭废黜前隐忍诈病。" },
+      "1011111": { title: "唐玄宗（天宝前）", name: "李隆基", desc: "接纳姚崇宋璟谠言、虽好修建华清池排场、但对杨贵妃情笃专一、夙夜图治、好赏赐四方。" },
+      "1011110": { title: "宋太宗", name: "赵光义", desc: "喜延揽儒臣、大修皇家藏书宫馆、性节女色、勤批奏牍至深夜、行烛影斧声机巧之策。" },
+      "1011101": { title: "隋文帝", name: "杨坚", desc: "崇尚信实、虽开皇大建大兴城、但独宠独孤皇后无别姬（节）、勤于听政、对府库极吝外放。" },
+      "1011100": { title: "清宣宗（道光）", name: "旻宁", desc: "虽然俭朴名声在外但内廷实务靡费、御下严厉吝啬放饷、深藏机心。" },
+      "1011011": { title: "明成祖（永乐）", name: "朱棣", desc: "听夏原吉谏言、大建紫禁城远征漠北（奢）、私德甚少滥宠、靖难削株蔓引（暴）、恩赏武臣极厚。" },
+      "1011010": { title: "秦始皇", name: "嬴政", desc: "能纳尉缭李斯、大兴阿房陵寝、不沉溺女色、勤批重百斤竹简、焚书坑儒严法、大施机变灭六国。" },
+      "1011001": { title: "后周太祖", name: "郭威", desc: "崇儒重道、军旅开支庞大、不近女色、力疾勤政、处置叛将断然绝情、对国帑极其看守。" },
+      "1011000": { title: "西楚霸王", name: "项羽", desc: "谦敬长者（妇人之仁）、烧阿房拥重资、情专虞姬、躬亲督战、坑杀秦降卒（暴）、印刓不授（吝）。" },
+      "1010111": { title: "宋英宗", name: "赵曙", desc: "待辅臣和逊、营缮宫殿有加、无声色之好、病笃怠政、性行仁慈、厚抚宗室。" },
+      "1010110": { title: "汉安帝", name: "刘祜", desc: "谦畏外戚、大修离宫、守礼无多宠、久怠庶务委政邓氏与宦官、待邓氏后以计诛之。" },
+      "1010101": { title: "晋惠帝", name: "司马衷", desc: "愚钝谦退、何不食肉糜所见奢华、与贾南风相敬无外色、痴呆怠政、性本纯仁不忍害人。" },
+      "1010100": { title: "南陈后主", name: "陈叔宝", desc: "谦接群臣、大建临春结绮阁（奢）、宠张丽华而不广滥、废弃朝政倚井自藏、善言令伪诈。" },
+      "1010011": { title: "南朝宋前废帝", name: "刘子业", desc: "尊儒臣为表、大修殿堂、无节制杀戮诸叔（暴）、行事乖张赏赐无度、但对所好直言不讳。" },
+      "1010010": { title: "后赵武帝", name: "石虎", desc: "降尊纳佛图澄、大建襄国宫殿、残杀亲子及后妃（暴）、怠政好杀、攻战屠城诡变。" },
+      "1010001": { title: "前秦幼主", name: "苻生", desc: "尚武接物质朴、好造华丽行宫、政务全委臣下、好手刃重臣（暴）、吝于封功、残暴直露。" },
+      "1010000": { title: "北齐后主", name: "高纬", desc: "优待倡优、大修晋阳宫室、纵情自娱不问政、诛杀斛律光兰陵王、吝惜内帑、好阴谋暗算。" },
+      "1001111": { title: "唐中宗", name: "李显", desc: "优柔谦抑、纵容安乐公主大修第宅、宫廷秽乱不察、勤于和解宗室与外戚、对朝臣大施爵赏。" },
+      "1001110": { title: "汉武帝", name: "刘彻", desc: "虽独尊儒术能纳主父偃、修建建章宫、女色极众、雄才大略巡行天下（勤）、晚年寄托巫蛊以权术治下。" },
+      "1001101": { title: "魏文帝", name: "曹丕", desc: "善听华歆辛毗谏、大修洛阳宫殿、广纳二女与郭甄、勤于著述与政制、对曹洪极度吝惜金钱。" },
+      "1001100": { title: "金世宗", name: "完颜雍", desc: "谦称小尧舜、兴筑金中都、女侍繁缛、躬亲治道、控御财政甚严、推行女真本位权谋。" },
+      "1001011": { title: "北魏太武帝", name: "拓跋焘", desc: "谦抚战将、营建平城台观、后宫广置、戎马倥偬一生、灭佛严酷杀戮（暴）、重赏降臣。" },
+      "1001010": { title: "吴大帝", name: "孙权", desc: "屈身忍辱纳群臣、晚年大建宫苑、后宫离乱、精力过人勤于政事、南鲁党争残戮辅臣（暴/诈）。" },
+      "1001001": { title: "梁武帝（早中期）", name: "萧衍", desc: "纳贺琛直言、大修佛寺同泰寺（奢）、广蓄乐妓、宵衣旰食、侯景之乱前用法过苛且吝赏。" },
+      "1001000": { title: "前燕景昭帝", name: "慕容儁", desc: "待大臣以礼、营建邺城、宫闱多宠、克勤军政、严刑征发、吝啬颁赏、诈降诱敌。" },
+      "1000111": { title: "蜀汉后主（晚年）", name: "刘禅", desc: "谦逊放权、修筑后庭、后宫繁琐、深居游宴不视事、仁慈赦罪、大赐蜀中勋贵。" },
+      "1000110": { title: "宋徽宗", name: "赵佶", desc: "善遇文人、修筑艮岳花石纲、纵情青楼李师师、怠政委任蔡京童贯、用联金灭辽之权诈。" },
+      "1000101": { title: "明宪宗（成化）", name: "朱见深", desc: "宽和谦卑、宠万贵妃纵容皇庄奢靡、怠政万贵妃专宠、仁厚复景泰帝名号、吝于发内库赈灾。" },
+      "1000100": { title: "汉成帝", name: "刘骜", desc: "优容许氏班婕妤、大起宵游宫、沉迷赵飞燕合德、委政王氏怠政、暗杀皇嗣（诈/匿）。" },
+      "1000011": { title: "陈文帝", name: "陈蒨", desc: "礼贤下士、宫室崇盛、韩子高及后宫流风、疏于政刑、滥杀王昙朗等宗室（暴）。" },
+      "1000010": { title: "北齐文宣帝（晚期）", name: "高洋", desc: "始尊儒谦恭、后大建三台宫殿、淫乱宗室诸女、酗酒废政、醉中当街剖杀人（暴/狂诈）。" },
+      "1000001": { title: "吴末帝", name: "孙皓", desc: "初即位发仓廪谦和、继而大修新宫、开凿青溪、后宫五千人、怠荒万机、剥人面皮（暴/吝）。" },
+      "1000000": { title: "隋炀帝", name: "杨广", desc: "即位前伪饰恭俭清心（诈）、即位后建东都修运河（奢）、广选江南美女、沉溺江都、诛戮忠良、聚敛天下。" },
+      "0111111": { title: "汉文帝", name: "刘恒", desc: "偶露矜骄自诩兵威、身着弋绨、宠慎夫人但重节制、废肉刑、休养生息、待天下以信义。" },
+      "0111110": { title: "后周世宗", name: "柴荣", desc: "雄视天下自信甚高（骄）、躬行节俭、无女色之私、亲征不辍勤政、仁育黔首、破佛毁寺兼施权宜。" },
+      "0111101": { title: "汉景帝", name: "刘启", desc: "骄自天生诛晁错、崇尚黄老从俭、后宫治肃、削藩治国勤勉、实行阳德轻刑、极度吝于封王封侯。" },
+      "0111100": { title: "宋太祖", name: "赵匡胤", desc: "傲视五代群雄、衣着浣濯、终生不近骄奢女色、雪夜访普勤政、杯酒释兵权施机诈、收回诸藩财权。" },
+      "0111011": { title: "明思宗（崇祯）", name: "朱由检", desc: "刚愎自用誓不认错（骄）、衣冠带补丁（俭）、内廷无宠、批阅奏章达旦、凌迟袁崇焕诛戮督抚（暴）、推心待烈士。" },
+      "0111010": { title: "新朝始建国皇帝", name: "王莽", desc: "妄自尊大改制乱象、食不兼肉（俭）、不好女色、夙兴夜寐批符命、用法惨烈严苛（暴）、靠禅让伪诈登基。" },
+      "0111001": { title: "前秦景明帝", name: "苻健", desc: "割据关陇傲睨群雄、食无重味、独专军政、嗜杀豪强部曲、惜财不轻赐部从。" },
+      "0111000": { title: "南朝宋孝武帝", name: "刘骏", desc: "刚愎猜忌、生活简练、治国勤谨、但大杀宗室兄弟二十八人（暴）、聚敛财赋入内帑、手段阴毒。" },
+      "0110111": { title: "晋武帝（太康前）", name: "司马炎", desc: "混一天下自满傲然、羊车望幸前朴素治国、深宫寄政贾充、行优容宽大之仁、分封诸王极尽推恩。" },
+      "0110110": { title: "明光宗（泰昌）", name: "朱常洛", desc: "潜邸隐忍、登位自视甚高、撤罢矿税（施仁）、万历怠政之风犹存、红丸案诸事充满深宫诈谋。" },
+      "0110101": { title: "唐高祖（后期）", name: "李渊", desc: "得天下后骄矜纵逸、生活未见巨靡、居禁中委政太子与秦王、天性宽仁、对军功金帛核算极紧。" },
+      "0110100": { title: "刘宋少帝", name: "刘义符", desc: "虽骄纵游玩、未大修台阁、深宫戏游荒怠、少诛杀之暴、封赏吝吝、设木人奇计自乐。" },
+      "0110011": { title: "西夏毅宗", name: "李谅祚", desc: "刚愎亲政、行伍俭约、疏于政事好出猎、诛杀没藏讹庞全族（暴）、赏赐军士不吝。" },
+      "0110010": { title: "金海陵王（初年）", name: "完颜亮", desc: "志傲中原天下唯我独尊、力行女真俭礼、荒怠朝仪、大杀金太宗子孙宗室（暴/诈）。" },
+      "0110001": { title: "后汉高祖", name: "刘知远", desc: "骄抗晋命、军旅简朴、得国后倦勤怠政、杀戮无辜降卒、吝惜官库财赋不敢犒军。" },
+      "0110000": { title: "后晋出帝", name: "石重贵", desc: "傲慢对契丹称孙不称臣、国库空虚无大奢、沉湎酒戏怠政、刑赏无序诛杀忠臣、搜括民财入内库。" },
+      "0101111": { title: "唐太宗", name: "李世民", desc: "自负威加四海晚年稍骄、宫室尚求俭朴（罢建昭阳殿）、好色纳杨妃充华、抚民若子、恩及异族。" },
+      "0101110": { title: "汉高祖", name: "刘邦", desc: "傲慢箕踞侮慢儒生、布衣天子恶靡丽、喜好女色戚夫人、开基立业勤政、约法三章（仁）、伪游云梦擒韩信（诈）。" },
+      "0101101": { title: "后唐庄宗（早年）", name: "李存勖", desc: "自命世之雄、军中同甘共苦、喜纳降女为姬、冲锋陷阵亲冒矢石、爱恤士卒、然出赏甚吝。" },
+      "0101100": { title: "明世宗（嘉靖）", name: "朱厚熜", desc: "刚愎大礼议傲视群臣、修道用费甚隐不修宫、御女采补红铅、玄修二十载不废政权掌控、机变诈术如鬼神。" },
+      "0101011": { title: "北魏献文帝", name: "拓跋弘", desc: "自矜刚毅、食不重肉、内宠颇多、治兵讲武、怒杀冯太后男宠李弈（暴）、厚施军饷。" },
+      "0101010": { title: "魏武帝（魏王）", name: "曹操", desc: "英雄自负、操虽身居梓宫俭朴如素、好倡妇铜雀台、夙夜军政、宛城杀降借头杀粮官（暴/诈）。" },
+      "0101001": { title: "后梁末帝", name: "朱友贞", desc: "盲目自大、未见华美修饰、宫禁杂乱、勤于奔命排兵、诛杀近侍、藏金国库不肯发给将士。" },
+      "0101000": { title: "南朝宋明帝", name: "刘彧", desc: "自负能书善画、不崇华丽、借腹生子宫帏秽乱、勤阅刑奏、诛杀诸弟残暴无比、诈设巫蛊。" },
+      "0100111": { title: "陈后主（陷落前）", name: "陈叔宝", desc: "自负山河之险傲然不备、少营盛大武备、后宫群芳尽览、宴乐终日怠政、待臣下恩慈滥赏。" },
+      "0100110": { title: "唐宪宗（晚年）", name: "李纯", desc: "削藩成功后自骄自大、虽无大内修缮、好女色迎佛骨、沉溺金丹怠政、任用裴度但暗中权术制衡。" },
+      "0100101": { title: "明神宗（万历）", name: "朱翊钧", desc: "自尊为天子群臣奈何、常服洗浣、专宠郑贵妃、三十年不上朝（逸）、待民非酷刑、定陵耗费但内库极吝。" },
+      "0100100": { title: "宋理宗", name: "赵昀", desc: "理学自居自矜正统、宫用平平、荒淫晚节阎贵妃、委政贾似道二十年、待臣仁懦、吝发内府帑银。" },
+      "0100011": { title: "前赵末帝", name: "刘曜", desc: "骄慢自持纵酒狂呼、不尚外物盛奢、多纳关陇妇女、决战宿醉不视前线、拔剑虐杀逆命者、散财厚葬。" },
+      "0100010": { title: "南齐东昏侯", name: "萧宝卷", desc: "傲视礼法、衣服简狭、荒淫与潘玉儿并骑、不坐朝廷唯好鬼戏、发兵毁民居纵暴、机阱杀臣。" },
+      "0100001": { title: "南汉后主", name: "刘鋹", desc: "骄狂不可一世、居无重楼、宫女太监共戏荒淫、国政尽委女巫樊胡子、设汤镬毒象屠民、私藏珍宝。" },
+      "0100000": { title: "北齐废帝", name: "高殷", desc: "幼年傲岸、生活素朴、为娄太后诸党所挤沉溺后宫、退居深宫政荒、为高演逼杀前以权变求存。" },
+      "0011111": { title: "清圣祖（康熙晚期）", name: "玄烨", desc: "功德圆满自傲不凡、六下江南耗资不赀（奢）、晚年清修节制声色、勤政六十年如一日、行宽仁之政、蠲免天下钱粮。" },
+      "0011110": { title: "清高宗（乾隆）", name: "弘历", desc: "自诩十全老人（骄）、修圆明园下江南盛极奢华、专情孝贤纯皇后、勤批硃批、好大喜功恩威并济（施/诈）。" },
+      "0011101": { title: "宋神宗", name: "赵顼", desc: "志切恢复自视甚高、支撑变法财政大兴官署、私行自律不迩女色、勤图富强、对旧党恩慈、但收缩户部财权。" },
+      "0011100": { title: "明宣宗（宣德）", name: "朱瞻基", desc: "骄矜于功名盛世、好促织之戏玩物奢修、后宫自律爱胡皇后与孙贵妃、勤于抚民、宣德治世推行权谋。" },
+      "0011011": { title: "十六国夏武烈帝", name: "赫连勃勃", desc: "傲睨万方自号勃勃、大筑统万城极其奢靡、不好女色嗜好征杀、躬亲戎行、杀工匠填城墙（暴）、厚赏将士。" },
+      "0011010": { title: "吴越武肃王", name: "钱镠", desc: "称霸江东意气飞扬、修建捍海塘与杭州罗城（奢）、治内肃整、巡察民间治水利、用法峻急屠戮强梁、善结纳中原朝廷。" },
+      "0011001": { title: "金哀宗", name: "完颜守绪", desc: "骄自宗室、危难中仍修宫殿、不沉溺声色、勤于应付蒙宋夹攻、逼迫臣僚军法极严、惜财不出封赏。" },
+      "0011000": { title: "明景帝（景泰）", name: "朱祁钰", desc: "临危自傲践祚、营建陵寝万机、不近妖艳、勤于抵御也先、幽禁英宗废太子（暴/诈）、内府积银甚秘。" },
+      "0010111": { title: "晋武帝（太康后）", name: "司马炎", desc: "灭吴后骄奢自溢、起筑华池行宫、万姬选后但无乱淫之名、置政事于度外（逸）、施恩博厚、笃信大臣。" },
+      "0010110": { title: "唐懿宗", name: "李漼", desc: "骄纵不可向迩、穷极奢靡奉迎佛骨、未有后宫糜烂重案、终日游宴怠于朝政、遇灾不加罪于民、御臣多术。" },
+      "0010101": { title: "周赧王", name: "姬延", desc: "身居天子虚名心怀高位、大起高台天子之居、无声色之欲、无能为力委于六国（逸）、仁厚孱弱、向富贾债台高筑。" },
+      "0010100": { title: "南朝梁元帝", name: "萧绎", desc: "骄狂不可一世自视博通、江陵置宫奢丽、不好女色、大敌当前犹讲老子（逸）、吝惜国宝焚书十四万卷、权诈弑侄。" },
+      "0010011": { title: "前秦厉轩帝（晚期）", name: "苻生", desc: "自矜天下莫敌、造华丽阿房露台、少近美姬、嗜睡怠政、剥面生割随手击杀（暴）、大施酒食厚赠左右。" },
+      "0010010": { title: "南齐明帝", name: "萧鸾", desc: "傲视正统皇系、起造诸王宅第、清心少欲无色好、不亲细务、屠尽高武二帝子孙（暴）、诈称重疾杀诸王。" },
+      "0010001": { title: "北魏隐帝", name: "元廓", desc: "虚据帝位心怀怏怏、宇文泰所建宫第繁盛、守身自持、怠于庶政听凭宇文氏、宇文杀戮难阻、国帑分毫难出。" },
+      "0010000": { title: "后梁郢王", name: "朱友珪", desc: "弑父篡位骄狂、大内奢靡自奉、私生活制约、不理政事委任左右、杀朱友文等残暴绝伦、假造遗诏伪诈登基。" },
+      "0001111": { title: "后唐明宗", name: "李嗣源", desc: "勇烈自满、居官厚自供养、后院妻妾众多、勤战沙场治世严明、施舍士卒、以信直闻。" },
+      "0001110": { title: "唐玄宗（全貌）", name: "李隆基", desc: "吞并四夷自骄、开元天宝极尽奢华、纳玉环宠惠妃、前期克勤图治、行均田减赋、晚年权衡李林甫杨国忠行帝王制衡。" },
+      "0001101": { title: "明武宗（正德）", name: "朱厚照", desc: "骄纵自号威武大将军、修豹房玩物大肆破费、四处巡幸选美猎色、亲征应州御敌勤勉、待下宽厚、然而内库钱财严防外廷。" },
+      "0001100": { title: "宋真宗", name: "赵恒", desc: "澶渊之盟后骄狂自封、封禅泰山修万寿宫极尽奢靡、宠刘娥多有后宫风流、勤批御札、宽仁薄刑、搞天书降临自欺欺人。" },
+      "0001011": { title: "金海陵王（执政期）", name: "完颜亮", desc: "骄狂不可一世欲提兵百万立马吴山、大造汴京南京宫室、强纳宗室之妻、策马长驱亲提大军南侵、动辄斩将（暴）、重金赏赐前锋。" },
+      "0001010": { title: "前赵昭武帝（执政中）", name: "刘聪", desc: "骄横跨越并州、筑建凰仪殿重楼、后宫置三皇后乱礼、勤于督军灭西晋、杀怀愍二帝及公卿（暴）、设和亲诱降权诈。" },
+      "0001001": { title: "后唐庄宗（晚年）", name: "李存勖", desc: "骄于灭梁之功、搜罗天下珍宝入内库、纵容刘皇后搜刮与伶人聚乱、躬自练兵校阅、诛杀郭崇韬大将（暴）、吝于赏赐犒军。" },
+      "0001000": { title: "西汉昌邑王", name: "刘贺", desc: "狂妄难测、大肆受用霍光所给乘舆、荒淫无道宣淫深宫、受玺二十七天行一千一百二十七件恶疾之政、斥逐忠臣、藏匿内府财物。" },
+      "0000111": { title: "南汉高祖（晚年）", name: "刘䶮", desc: "妄自尊大自号大汉、修筑昭阳殿极其豪靡、广选南蛮绝色、沉溺深宫委政太监、宽容对待僚佐、挥金如土赏赐近幸。" },
+      "0000110": { title: "宋度宗", name: "赵禥", desc: "自傲帝系、宫禁极尽奢靡之乐、一日召幸三十余妃、怠政全部推给贾似道、生性宽懦不事杀戮、行公田法以诡计夺田。" },
+      "0000101": { title: "明熹宗（天启）", name: "朱由校", desc: "骄顽自居、重修皇极门极尽木石奢华、沉溺客氏与后宫声色、不理朝政整日木工（逸）、心性并不嗜血、对内廷私帑惜之如命。" },
+      "0000100": { title: "汉灵帝", name: "刘宏", desc: "狂妄自封、修裸游馆西园造犬戴进贤冠、后宫淫乱设开裆裤、怠政卖官鬻爵（逸）、优柔对待何进等、聚钱于西园万岁库（极吝）、善用机诈制衡士族。" },
+      "0000011": { title: "商纣王", name: "帝辛", desc: "智足以拒谏言足以饰非（骄）、筑鹿台琼室（奢）、酒池肉林（淫）、沉湎糟粕不事国政（逸）、炮烙虿盆剖心比干（暴）、散鹿台之财示诚于群小。" },
+      "0000010": { title: "前秦越厉王（全面）", name: "苻生", desc: "傲慢自诩受命于天、极力靡费修台榭、强占宗室姑姊、深宫酣睡不朝、剥皮剔肉剜目截胫（暴）、金帛全赏给奉承左右、诱降叛臣而后醢之。" },
+      "0000001": { title: "夏桀", name: "姒履癸", desc: "威棱自诩天之有日、筑倾宫瑶台、肉山脯林配妹喜、不恤民事倦政荒怠、杀关龙逢烹商使（暴）、聚万民之财而不赏、行事残暴不加掩饰。" },
+      "0000000": { title: "后废帝", name: "刘昱", desc: "目中无人自恃天子、起作雕饰尽耗国府、日与从骑滥交后宫男女、荒废万机出猎街衢、击杀孕妇剖验儿形（极暴）、视财如命削夺将俸、口蜜腹剑阴刺萧道成。" }
+    };
+
+    // 14 道测试题
+    const QUESTIONS = [
+      {
+        title: "危机复盘",
+        scenario: "你主导的项目在收尾阶段突发重大失误造成预算损失，主要责任在一名下属，高管层正等待紧急汇报。你的第一反应是：",
+        options: [
+          { text: "独自扛下管理责任，坦承自己把控不力；私下找该下属复盘并安抚其情绪。", pos: "qian", neg: "ren" },
+          { text: "实事求是，复盘完整流程，指出技术失误，同时呈报连夜做好的止损方案。", pos: "cheng", neg: "qin" },
+          { text: "弱化失误，归于不可抗力偶发特例，顺势将话题引向竞争对手的亏损案例。", pos: "jiao", neg: "zha" },
+          { text: "立刻公布该下属的处分，同时取消全团队近期团建，压缩经费弥补损失。", pos: "bao", neg: "lin" }
+        ]
+      },
+      {
+        title: "利益博弈",
+        scenario: "年底有一个极关键的跨国合作机会，名额只有一个，各部门都在暗中角力。你会：",
+        options: [
+          { text: "在会议上展示团队气势与决心，誓要拿下项目。", pos: "shi", neg: "she" },
+          { text: "开启高强度模式，带队通宵打磨方案，用业务数据和勤勉拼下这个机会。", pos: "qin", neg: "jian" },
+          { text: "认为团队今年已经足够辛苦，绝不强行给团队增加不必要的加班。", pos: "yi", neg: "jie" },
+          { text: "对其他对手表示支持，暗中打探对方底牌并设法卡住对方的核心审批。", pos: "zha", neg: "lin" }
+        ]
+      },
+      {
+        title: "诱惑与交锋",
+        scenario: "晚宴后，重量级潜在合作方私下发出暧昧邀约，暗示只要“私人关系更进一步”就给予独家代理权。你会：",
+        options: [
+          { text: "礼貌而坚定地婉拒邀约，次日严格按照公开流程提交竞标书。", pos: "jie", neg: "cheng" },
+          { text: "赴约展现自身魅力，享受这种受追捧的优越感，认为商业合作各取所需。", pos: "yin", neg: "jiao" },
+          { text: "不明确拒绝也不越界，吊着对方以套取核心情报，同时暗中打压竞争对手。", pos: "zha", neg: "yi" },
+          { text: "称自己无权拍板，将难办条款推给上级，同时为自己争取更多差旅福利。", pos: "qian", neg: "she" }
+        ]
+      },
+      {
+        title: "竞争对手的把柄",
+        scenario: "对手部门主管因私人纠纷引发公司震荡。只要你推波助澜就能彻底接管其核心业务。你会：",
+        options: [
+          { text: "在例会上主动表态“聚焦业务能力本身”，绝不借私德风波落井下石。", pos: "jie", neg: "jiao" },
+          { text: "暗中扩大舆论，趁乱把其部门预算与核心人员全盘收编。", pos: "shi", neg: "zha" },
+          { text: "代表公司表达慰问并给予援助，但私下要求其交出核心资源作为退场交换。", pos: "ren", neg: "lin" },
+          { text: "带领全员开启冲刺模式，用绝对的业绩在下季度竞标中终结竞争。", pos: "qin", neg: "bao" }
+        ]
+      },
+      {
+        title: "开支超标",
+        scenario: "公司要求压缩30%成本。你团队最大两笔开销是：常态化高规格接待、探索性技术研发。你会：",
+        options: [
+          { text: "率先将管理层待遇降至标准，严查报销，但力保基层薪资与技术试验投入。", pos: "jian", neg: "bao" },
+          { text: "如实交底当前财务明细，平等削减开支，放慢业务节奏让团队修整。", pos: "cheng", neg: "yi" },
+          { text: "通过精细的跨期财务平摊技巧掩饰账期开支，维持豪华接待以稳定客户。", pos: "she", neg: "qian" },
+          { text: "向老板痛陈预算紧缺，砍掉所有探索性项目，将省下预算全锁进备用金。", pos: "jie", neg: "lin" }
+        ]
+      },
+      {
+        title: "空降领导",
+        scenario: "公司空降了一位能力平平但背景深厚的高管，上任第一周就提出了几个脱离实际的荒唐指标。你会：",
+        options: [
+          { text: "在全员会上用详实数据与逻辑逐一拆穿其方案漏洞，让高管层慎重。", pos: "cheng", neg: "jiao" },
+          { text: "表面极尽恭敬顺从，暗中将所有风险推给该上司签字背书。", pos: "qian", neg: "zha" },
+          { text: "私下提点新上司补习业务常识，替他重构一套能落地的平替方案。", pos: "ren", neg: "qin" },
+          { text: "既然外行管内行，索性不再多管闲事，只要自己待遇不受损，乐得清闲。", pos: "yi", neg: "she" }
+        ]
+      },
+      {
+        title: "并购谈判",
+        scenario: "你正在与外部巨头进行战略重组谈判，对方试图剥夺团队独立人事权，但在注资与期权上开出天价。你会：",
+        options: [
+          { text: "坚决拒绝任何削弱团队话语权的条款，亮出底线并准备随时中止谈判。", pos: "jie", neg: "bao" },
+          { text: "假意接受换取注资，但在细则中埋设交叉否决与双重汇报机制，实际架空对方。", pos: "zha", neg: "jian" },
+          { text: "接受收购，但将自己的大部分期权全部转化为全员的留任基金与分红。", pos: "shi", neg: "yi" },
+          { text: "阐明双方工作文化差异与风险，提出过渡方案，期待通过信任建立共赢。", pos: "cheng", neg: "yin" }
+        ]
+      },
+      {
+        title: "骨干离职",
+        scenario: "你一手培养的核心骨干在项目冲刺阶段突提离职，且早已私签竞业协议，甚至试图带走两名组员。你会：",
+        options: [
+          { text: "启动竞业条款封杀，通报全员并扣发其全部期权年终奖，同时提起诉讼。", pos: "bao", neg: "lin" },
+          { text: "与其深谈感谢其过去贡献，为其签署离职证明，在权限内按最高额度结算。", pos: "ren", neg: "shi" },
+          { text: "自我反思是否忽视了对方诉求，顶上技术空缺，带领剩下的团队通宵重构。", pos: "qian", neg: "qin" },
+          { text: "表面设宴践行送昂贵礼物套取新东家项目，暗中抢注其试图带走的专利。", pos: "zha", neg: "she" }
+        ]
+      },
+      {
+        title: "年终述职",
+        scenario: "全公司同台角逐明年的资源池。今年你负责的业务线完成度在85%，未达预期。你会：",
+        options: [
+          { text: "不掩饰未达标数据，列出15%的差距与败因，提出明年的军令状。", pos: "cheng", neg: "jiao" },
+          { text: "重新统计口径，包装为“第二增长曲线模型”，将85%讲成“逆势突破”。", pos: "zha", neg: "yin" },
+          { text: "强调极度压缩预算的条件，展示高能效比和保持轻资产运作的优势。", pos: "jian", neg: "yi" },
+          { text: "全面展示这一年里攻坚克难的工作细节与加班数据，为团队全力争取。", pos: "qin", neg: "shi" }
+        ]
+      },
+      {
+        title: "管理风格",
+        scenario: "如果让你在完全自主的权限下，建立团队管理制度与氛围，你最倾向：",
+        options: [
+          { text: "日常追求极简务实，下属随时可提出质疑，拒绝一切形式主义排场。", pos: "qian", neg: "jian" },
+          { text: "狼性文化，实行末位淘汰，达标者奖励现金，落后者公开批评降薪。", pos: "bao", neg: "shi" },
+          { text: "弹性工作制，不打卡不查岗，注重生活与工作边界，但工作必须保质保量。", pos: "yi", neg: "jie" },
+          { text: "抓牢审批权，实行单线汇报；树立威信，奖励制度需要层层考评。", pos: "lin", neg: "zha" }
+        ]
+      },
+      {
+        title: "意外收入",
+        scenario: "公司多年前的投资意外盈利，你部门分到一笔不计入考核的额外利润。你会：",
+        options: [
+          { text: "在顶级五星级酒店举办庆功晚会，采购高规格礼品犒劳团队。", pos: "she", neg: "shi" },
+          { text: "将钱作为安全储备金，全员薪资一切照旧，严抓管理以免大家浮躁。", pos: "jie", neg: "lin" },
+          { text: "告知团队这笔钱是运气红利，可以暂时放慢节奏，鼓励大家轮流带薪进修。", pos: "qian", neg: "yi" },
+          { text: "对外压缩实际数额，私下将资金用来犒劳团队和投入业务应急金。", pos: "qin", neg: "zha" }
+        ]
+      },
+      {
+        title: "越界违纪",
+        scenario: "你的核心下属近期频繁迟到早退、私收供应商微小回扣，并对新人指手画脚。你会：",
+        options: [
+          { text: "念及交情在管理层前遮掩，自掏腰包帮其补齐违规缺口，私下多次劝诫。", pos: "ren", neg: "she" },
+          { text: "如实上交违纪证据，解除其职务移交法务，按规定处置。", pos: "cheng", neg: "bao" },
+          { text: "暂时维持表面，暗中将其负责的核心业务分流，剥离实权。", pos: "shi", neg: "zha" },
+          { text: "削减其下季度经费额度与业务自主权，手头的关键项目全部收回。", pos: "qin", neg: "lin" }
+        ]
+      },
+      {
+        title: "行业峰会",
+        scenario: "全行业瞩目的峰会上，一位前辈当众质疑你的商业模式是“昙花一现的投机产物”。你会：",
+        options: [
+          { text: "微笑听完，随后指出对方近年来投资失败的几大案例。", pos: "jiao", neg: "yin" },
+          { text: "诚挚致意，坦承模式确实存在局限，虚心请教改进建议并克制情绪争执。", pos: "qian", neg: "jie" },
+          { text: "不逞口舌之辩，发言结束后连夜召集团队查缺补漏，用事业成功回击。", pos: "qin", neg: "bao" },
+          { text: "打圆场，会后宴请该前辈，以优厚的顾问费将其聘为虚职顾问为自己站台。", pos: "she", neg: "zha" }
+        ]
+      },
+      {
+        title: "权力交接",
+        scenario: "多年拼杀，终于走到了职业顶峰。此时你可以自由选择接下来的退场或管理方式，你会：",
+        options: [
+          { text: "退出日常管理，将权力完整交接不留暗门，自己休养生息。", pos: "yi", neg: "ren" },
+          { text: "坐稳第一把交椅，即便退居二线也要通过信托结构终身控制核心权力。", pos: "jiao", neg: "lin" },
+          { text: "将部分股权与资产设立为公益性员工保障与科技创新基金，远离权力场。", pos: "jian", neg: "shi" },
+          { text: "留下严密考核制度，要求所有人恪守职业道德底线，执行企业文化。", pos: "cheng", neg: "jie" }
+        ]
+      }
+    ];
+
+    // 分数追踪器
+    const scores = {
+      qian: 0, jiao: 0,
+      jian: 0, she: 0,
+      jie: 0,  yin: 0,
+      qin: 0,  yi: 0,
+      ren: 0,  bao: 0,
+      shi: 0,  lin: 0,
+      cheng: 0, zha: 0
+    };
+
+    let currentQuestionIdx = 0;
+    const selectedHistory = [];
+
+    function renderQuestion() {
+      const q = QUESTIONS[currentQuestionIdx];
+      document.getElementById('step-indicator').innerText = `SCENARIO ${String(currentQuestionIdx + 1).padStart(2, '0')} / 14`;
+      document.getElementById('question-title').innerText = q.title;
+      document.getElementById('question-scenario').innerText = q.scenario;
+      document.getElementById('progress-bar').style.width = `${((currentQuestionIdx + 1) / QUESTIONS.length) * 100}%`;
+
+      const prevBtn = document.getElementById('prev-btn');
+      prevBtn.disabled = (currentQuestionIdx === 0);
+
+      const optionsList = document.getElementById('options-list');
+      optionsList.innerHTML = '';
+
+      q.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt.text;
+        btn.onclick = () => selectOption(opt);
+        optionsList.appendChild(btn);
+      });
+    }
+
+    function selectOption(opt) {
+      scores[opt.pos] = (scores[opt.pos] || 0) + 1;
+      scores[opt.neg] = (scores[opt.neg] || 0) + 1;
+      selectedHistory.push(opt);
+
+      currentQuestionIdx++;
+      if (currentQuestionIdx < QUESTIONS.length) {
+        renderQuestion();
+      } else {
+        calculateAndShowResult();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIdx > 0 && selectedHistory.length > 0) {
+        const lastOpt = selectedHistory.pop();
+        scores[lastOpt.pos] = Math.max(0, (scores[lastOpt.pos] || 0) - 1);
+        scores[lastOpt.neg] = Math.max(0, (scores[lastOpt.neg] || 0) - 1);
+
+        currentQuestionIdx--;
+        renderQuestion();
+      }
+    }
+
+    // 唯一的核心计算与结果渲染函数（已整合七维特性与诠释）
+    function calculateAndShowResult() {
+      const d1 = (scores.qian >= scores.jiao) ? "1" : "0";
+      const d2 = (scores.jian >= scores.she)  ? "1" : "0";
+      const d3 = (scores.jie  >= scores.yin)  ? "1" : "0";
+      const d4 = (scores.qin  >= scores.yi)   ? "1" : "0";
+      const d5 = (scores.ren  >= scores.bao)  ? "1" : "0";
+      const d6 = (scores.shi  >= scores.lin)  ? "1" : "0";
+      const d7 = (scores.cheng >= scores.zha) ? "1" : "0";
+
+      const profileCode = `${d1}${d2}${d3}${d4}${d5}${d6}${d7}`;
+      const emperor = EMPERORS[profileCode] || EMPERORS["1111111"];
+
+      document.getElementById('quiz-box').style.display = 'none';
+      const resBox = document.getElementById('result-box');
+      resBox.style.display = 'block';
+
+      // 渲染皇帝称号 皇帝名字
+      document.getElementById('result-emperor').innerText = `${emperor.title} ${emperor.name}`;
+
+      // 渲染单字色彩标签
+      const dimContainer = document.getElementById('result-dimensions');
+      dimContainer.innerHTML = `
+        <span class="dim-tag ${d1 === '1' ? 'pos' : 'neg'}">${d1 === '1' ? '谦' : '骄'}</span>
+        <span class="dim-tag ${d2 === '1' ? 'pos' : 'neg'}">${d2 === '1' ? '俭' : '奢'}</span>
+        <span class="dim-tag ${d3 === '1' ? 'pos' : 'neg'}">${d3 === '1' ? '节' : '淫'}</span>
+        <span class="dim-tag ${d4 === '1' ? 'pos' : 'neg'}">${d4 === '1' ? '勤' : '逸'}</span>
+        <span class="dim-tag ${d5 === '1' ? 'pos' : 'neg'}">${d5 === '1' ? '仁' : '暴'}</span>
+        <span class="dim-tag ${d6 === '1' ? 'pos' : 'neg'}">${d6 === '1' ? '施' : '吝'}</span>
+        <span class="dim-tag ${d7 === '1' ? 'pos' : 'neg'}">${d7 === '1' ? '诚' : '诈'}</span>
+      `;
+
+      // 渲染七维特性与诠释条目
+      const traitsListContainer = document.getElementById('dimension-traits-list');
+      traitsListContainer.innerHTML = '';
+
+      const bits = [d1, d2, d3, d4, d5, d6, d7];
+      bits.forEach((bit, idx) => {
+        const dimMeta = DIMENSION_MAP[idx];
+        const isPos = (bit === '1');
+        const activeTrait = isPos ? dimMeta.pos : dimMeta.neg;
+
+        const row = document.createElement('div');
+        row.className = 'trait-item';
+        row.innerHTML = `
+          <span class="trait-badge ${isPos ? 'pos' : 'neg'}">${dimMeta.name} · ${activeTrait.label}</span>
+          <span class="trait-desc">${activeTrait.desc}</span>
+        `;
+        traitsListContainer.appendChild(row);
+      });
+
+      // 渲染史实锚点与通评
+      document.getElementById('result-desc').innerText = emperor.desc;
+    }
+
+    function startQuiz() {
+      document.getElementById('cover-box').style.display = 'none';
+      document.getElementById('quiz-box').style.display = 'block';
+      renderQuestion();
+    }
+
+    function restartQuiz() {
+      for (let k in scores) scores[k] = 0;
+      currentQuestionIdx = 0;
+      selectedHistory.length = 0;
+      document.getElementById('result-box').style.display = 'none';
+      document.getElementById('quiz-box').style.display = 'none';
+      document.getElementById('cover-box').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
